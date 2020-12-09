@@ -93,7 +93,6 @@ export class UsersService {
 
     async editProfile(userId:number, {email, password}:EditProfileInput):Promise<{ok:boolean,error?:string,user?:User}>  {
         try{
-            console.log("editProfile");
             const user = await this.usersRepository.findOne(userId);
             if(email){
                 user.email = email;
