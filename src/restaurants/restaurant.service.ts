@@ -13,17 +13,8 @@ export class RestaurantService{
         private readonly restaurantRepository: Repository<Restaurant>
     ){}
     
-    getAll() : Promise<Restaurant[]>{
-        return this.restaurantRepository.find();
-    }
-
     createRestaurant(input: CreateRestaurantDto) :Promise<Restaurant> {
         const newRestaurant = this.restaurantRepository.create(input);
         return this.restaurantRepository.save(newRestaurant);
     }
-
-    updateRestaurant({id, data}: UpdateRestaurantDto) {
-        return this.restaurantRepository.update(id, {...data});        
-    }
-
 }

@@ -15,6 +15,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
 import { Verification } from './users/entities/verification.entity';
 import { MailModule } from './mail/mail.module';
+import { Category } from './restaurants/entities/category.entity';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { MailModule } from './mail/mail.module';
       ignoreEnvFile: process.env.NODE_ENV === "prod",      
       envFilePath: process.env.NODE_ENV === "dev" ? ".env.dev" : ".env.test",
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string().valid('dev','prod').required(),
+        NODE_ENV: Joi.string().valid('dev','prod','test').required(),
         DB_HOST:Joi.string().required(),
         DB_USER:Joi.string().required(),
         DB_PORT: Joi.string().required(),
@@ -42,9 +43,9 @@ import { MailModule } from './mail/mail.module';
       username: process.env.DB_USER,
       password: process.env.DB_PW, 
       database:process.env.DB_NAME,      
-      synchronize: true,
-      logging: true,
-      entities: [User, Verification],     
+      synchronize: process.env.NODE_ENV !=="prod",
+      logging:  process.env.NODE_ENV !=="prod" && process.env.NODE_ENV !== "test",
+      entities: [User, Verification, Restaurant, Category],     
     }),
     GraphQLModule.forRoot({
      autoSchemaFile: true,
@@ -59,7 +60,8 @@ import { MailModule } from './mail/mail.module';
       fromEmail:process.env.MAILGUN_FROM_EMAIL,
     }), 
     UsersModule,    
-    CommonModule, AuthModule,    
+    CommonModule, AuthModule,
+    RestaurantsModule,    
  ],
   controllers: [],
   providers: [],

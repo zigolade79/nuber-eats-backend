@@ -94,9 +94,17 @@ export class UsersService {
     async editProfile(userId:number, {email, password}:EditProfileInput):Promise<{ok:boolean,error?:string,user?:User}>  {
         try{
             const user = await this.usersRepository.findOne(userId);
+            const otherUser = await this.usersRepository.findOne({email});
+            if(otherUser){
+                return {
+                    ok:false,
+                    error:"You cannot use that Email"
+                }
+            }
             if(email){
                 user.email = email;
                 user.isVerified = false;
+                await this.verifyRepository.delete({user:{id:user.id}});
                 const verification = await this.verifyRepository.save(this.verifyRepository.create({user}));
                 this.mailService.sendVerificationEmail(user.email,verification.code);
             }
@@ -110,6 +118,7 @@ export class UsersService {
             }
             throw Error();
         }catch(error){
+            console.log(error);
             return {
                 ok:false,
                 error
@@ -130,6 +139,7 @@ export class UsersService {
             }else{
                 return {
                     ok:false,
+                    error:"Verification is failed"
                 }
             }
         }catch(error){
