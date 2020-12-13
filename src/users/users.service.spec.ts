@@ -5,7 +5,7 @@ import { JwtService } from "src/jwt/jwt.service";
 import { MailService } from "src/mail/mail.service";
 import { Repository } from "typeorm";
 import { EditProfileInput } from "./dtos/edit-profile.dto";
-import { User } from "./entities/user.entity";
+import { User, UserRole } from "./entities/user.entity";
 import { Verification } from "./entities/verification.entity";
 import { UsersService } from "./users.service";
 
@@ -72,7 +72,7 @@ describe("UserService", ()=>{
         const createAccountArgs = {
             email: "retwe",
             password: "erwtret",
-            role:0,
+            role:UserRole.Client,
         }
         it("Should fail if user exist", async ()=>{
             userRepository.findOne.mockResolvedValue({
