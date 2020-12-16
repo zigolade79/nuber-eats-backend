@@ -2,7 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/users/entities/user.entity";
 import { Repository } from "typeorm";
+import { AllCategoryOutput } from "./dtos/all-categories.dto";
 import { CreateRestaurantInput, CreateRestaurantOutput } from "./dtos/create-restaurant.dto";
+import { DeleteRestaurantInput, DeleteRestaurantOutput } from "./dtos/delete-restaurant.dto";
 import { EditRestaurantInput, EditRestaurantOutput } from "./dtos/edit-restaurant.dto";
 import { Category } from "./entities/category.entity";
 import { Restaurant } from "./entities/restaurant.entity";
@@ -16,20 +18,6 @@ export class RestaurantService{
         private readonly categoryRepository: CategoryRepository,
     ){}
     
-    async getOrCreate(categoryName:string) : Promise<Category>{
-        const newCategoryName = categoryName.trim().toLowerCase();
-        const newCategorySlug = newCategoryName.replace(/ /g,"-");
-        try{
-            let category = await this.categoryRepository.findOne({categoryName:newCategorySlug});
-            if(!category){
-                category = await this.categoryRepository.save(this.categoryRepository.create({categoryName:newCategorySlug}));
-            }
-            return category;
-        }catch(error){
-            console.log(error);
-        }
-    }
-
     async createRestaurant(
         owner:User,
         createRestaurantInput: CreateRestaurantInput) :Promise<CreateRestaurantOutput> {
@@ -53,19 +41,9 @@ export class RestaurantService{
         owner:User,
         editRestaurantInput: EditRestaurantInput) :Promise<EditRestaurantOutput> {
         try{
-            const restaurant = await this.restaurantRepository.findOne(editRestaurantInput.restaurantId,{loadRelationIds:true});
-            console.log(`editRestaurant=${restaurant}`);
-            if(!restaurant){
-                return{
-                    ok:false,
-                    error:"The restaurant not found",
-                }
-            }
-            if(owner.id !== restaurant.ownerId){
-                return{
-                    ok:false,
-                    error:"You can not edit restaurant that you don't own",
-                }
+            const result = this.checkRestaurant(owner, editRestaurantInput.restaurantId);
+            if((await result).ok === false){
+                return result;
             }
             let category:Category;
             if(editRestaurantInput.categoryName){
@@ -86,5 +64,71 @@ export class RestaurantService{
              };
         }
       
+    }
+
+    async deleteRestaurant(owner:User, deleteRestaurantInput: DeleteRestaurantInput): Promise<DeleteRestaurantOutput>{
+        try{
+            const result = this.checkRestaurant(owner, deleteRestaurantInput.restaurantId);
+            if((await result).ok === false){
+                return result;
+            }
+            await this.restaurantRepository.delete(deleteRestaurantInput.restaurantId);
+            return{
+                ok:true,
+            }
+        }catch(error){
+            return{
+                ok:false,
+                error,
+            }
+        }
+    }
+
+    async checkRestaurant(owner:User, restaurantId:number):Promise<DeleteRestaurantOutput>{
+        try{
+            const restaurant = await this.restaurantRepository.findOne(restaurantId,{loadRelationIds:true});
+            console.log(`checkRestaurant=${restaurant}`);
+            if(!restaurant){
+                return{
+                    ok:false,
+                    error:"The restaurant not found",
+                }
+            }
+            if(owner.id !== restaurant.ownerId){
+                return{
+                    ok:false,
+                    error:"You can not edit restaurant that you don't own",
+                }
+            }
+            return{
+                ok:true,
+            }
+        }catch(error){
+            console.log(error);
+            return{
+                ok:false,
+                error,
+            }
+        }
+    }
+
+    async allCategories():Promise<AllCategoryOutput>{
+        try{
+            const categories = await this.categoryRepository.find();
+            return{
+                ok:true,
+                categories,
+            }
+        }catch(error){
+            return{
+                ok:false,
+                error,
+            }
+
+        };
+    }
+
+    countRestaurant(category:Category){
+        return this.restaurantRepository.count({category});
     }
 }
