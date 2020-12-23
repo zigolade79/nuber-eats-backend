@@ -4,9 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
-
 import { RestaurantsModule } from './restaurants/restaurants.module';
-import { RestaurantResolver } from './restaurants/restaurants.resolver';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
@@ -16,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { Verification } from './users/entities/verification.entity';
 import { MailModule } from './mail/mail.module';
 import { Category } from './restaurants/entities/category.entity';
+import { Dish } from './restaurants/entities/dish.entity';
 
 @Module({
   imports: [
@@ -45,7 +44,7 @@ import { Category } from './restaurants/entities/category.entity';
       database:process.env.DB_NAME,      
       synchronize: process.env.NODE_ENV !=="prod",
       logging:  process.env.NODE_ENV !=="prod" && process.env.NODE_ENV !== "test",
-      entities: [User, Verification, Restaurant, Category],     
+      entities: [User, Verification, Restaurant, Category, Dish],     
     }),
     GraphQLModule.forRoot({
      autoSchemaFile: true,
