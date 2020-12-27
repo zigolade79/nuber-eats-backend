@@ -6,7 +6,9 @@ import { AllCategoryOutput } from "./dtos/all-categories.dto";
 import { CategoryInput } from "./dtos/category.dto";
 import { CreateDishInput, CreateDishOutput } from "./dtos/create-dish.dto";
 import { CreateRestaurantInput, CreateRestaurantOutput } from "./dtos/create-restaurant.dto";
+import { DeleteDishInput, DeleteDishOutput } from "./dtos/delete-dish.dto";
 import { DeleteRestaurantInput, DeleteRestaurantOutput } from "./dtos/delete-restaurant.dto";
+import { EditDishInput, EditDishOutput } from "./dtos/edit-dish.dto";
 import { EditRestaurantInput, EditRestaurantOutput } from "./dtos/edit-restaurant.dto";
 import { RestaurantInput, RestaurantOutput } from "./dtos/restaurant.dto";
 import { RestaurantsInput } from "./dtos/restaurants.dto";
@@ -270,6 +272,76 @@ export class RestaurantService{
             return{
                 ok:false,
                 error:"Cannot Create Dish"
+            }
+        }
+    }
+
+    async checkDish(owner:User, dishId:number) : Promise<EditDishOutput>{
+        try{
+            const dish = await this.dishRepository.findOne(dishId,{relations:['restaurant']});
+            if(!dish){
+                return{
+                    ok:false,
+                    error:"Cannot find the dish"
+                }
+            }
+            if(dish.restaurant.ownerId !== owner.id){
+                return{
+                    ok:false,
+                    error:"You are not the restaurant's owner"
+                }
+            }
+            return{
+                ok:true
+            }
+        }catch(error){
+            console.log(error);
+            return {
+                ok:false,
+                error
+            }
+        }
+    }
+
+    async editDish(owner:User, editDish:EditDishInput) : Promise<EditDishOutput>{
+        try{
+            const result = await this.checkDish(owner, editDish.dishId);
+            if(result.ok === false){
+                return result;
+            }
+            await this.dishRepository.save([
+                {
+                    id:editDish.dishId,
+                    ...editDish,
+                }
+            ]);
+            return{
+                ok:true
+            }
+        }catch(error){
+            console.log(error);
+            return{
+                ok:false,
+                error:"Cannot edit Dish"
+            }
+        }
+    }
+
+    async deleteDish(owner:User, {dishId}:DeleteDishInput) : Promise<DeleteDishOutput>{
+        try{
+            const result = await this.checkDish(owner, dishId);
+            if(result.ok === false){
+                return result;
+            }
+            await this.dishRepository.delete(dishId);
+            return{
+                ok:true
+            }
+        }catch(error){
+            console.log(error);
+            return{
+                ok:false,
+                error:"Cannot delete Dish"
             }
         }
     }
