@@ -155,10 +155,12 @@ export class RestaurantService{
                 where:{
                     category,
                 },
+                order:{
+                    isPromoted:"DESC",
+                },
                 take:5,
                 skip: (page -1) *5,
             });
-            
             const totalResults = await this.countRestaurant(category);
             return{
                 ok:true,
@@ -179,12 +181,16 @@ export class RestaurantService{
             const [restaurants,totalResults] = await this.restaurantRepository.findAndCount({
                 take:5,
                 skip: (page -1) *5,
-                relations:['category']
+                relations:['category'],
+                order:{
+                    isPromoted:"DESC",
+                }
             });
             return{
                 ok:true,
                 restaurants,
                 totalPages: Math.ceil(totalResults/5),
+                totalResults,
             }
         }catch(error){
             return{

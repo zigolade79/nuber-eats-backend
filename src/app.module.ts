@@ -18,6 +18,9 @@ import { Dish } from './restaurants/entities/dish.entity';
 import { OrdersModule } from './orders/orders.module';
 import { Order } from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
+import { PaymentsModule } from './payments/payments.module';
+import { Payment } from './payments/entities/payment.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -47,7 +50,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
       database:process.env.DB_NAME,      
       synchronize: process.env.NODE_ENV !=="prod",
       logging:  process.env.NODE_ENV !=="prod" && process.env.NODE_ENV !== "test",
-      entities: [User, Verification, Restaurant, Category, Dish, Order, OrderItem],     
+      entities: [User, Verification, Restaurant, Category, Dish, Order, OrderItem, Payment],     
     }),
     GraphQLModule.forRoot({
      installSubscriptionHandlers:true,
@@ -57,6 +60,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
          return { token: req ? req.headers[TOKEN_KEY] : connection.context[TOKEN_KEY]};
       }
     }),
+    ScheduleModule.forRoot(),
     JwtModule.forRoot({
       privateKey:process.env.PRIVATE_KEY,
     }),
@@ -70,7 +74,8 @@ import { OrderItem } from './orders/entities/order-item.entity';
     CommonModule, 
     RestaurantsModule,
     OrdersModule,
-    CommonModule,    
+    CommonModule,
+    PaymentsModule,    
  ],
   controllers: [],
   providers: [],
